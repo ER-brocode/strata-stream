@@ -103,17 +103,22 @@ func (p *Partition) Append(key []byte, value []byte) (int64, error) {
 		return -1, ErrClosed
 	}
 
+	offset, err := p.activeSegment.Append(key, value)
+	if err != nil {
+		return -1, err
+	}
+
 	if p.activeSegment.Size() >= p.maxSegBytes {
 		nextOffset := p.activeSegment.NextOffset()
 		newSeg, err := NewLogSegment(p.dir, nextOffset)
 		if err != nil {
-			return -1, fmt.Errorf("failed to roll segment: %w", err)
+			return offset, fmt.Errorf("failed to roll segment: %w", err)
 		}
 		p.segments = append(p.segments, newSeg)
 		p.activeSegment = newSeg
 	}
 
-	return p.activeSegment.Append(key, value)
+	return offset, nil
 }
 
 // ReadReads reads up to maxRecords starting from startOffset.

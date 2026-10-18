@@ -62,6 +62,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	_ = ctx
 
 	if err := server.Stop(); err != nil {
 		log.Printf("[StrataStream] Error during shutdown: %v\n", err)

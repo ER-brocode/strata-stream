@@ -7,9 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"sync"
 	"testing"
-	"time"
 
 	"github.com/ER-brocode/strata-stream/pkg/partition"
 	"github.com/ER-brocode/strata-stream/pkg/protocol"

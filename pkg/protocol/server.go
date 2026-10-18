@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net"

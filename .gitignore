@@ -1,0 +1,4 @@
+bin/
+*.exe
+strata-data/
+strata-cold-tier/
