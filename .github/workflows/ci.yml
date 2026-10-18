@@ -1,0 +1,55 @@
+name: Continuous Integration & Tiering Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build, Unit & Benchmark Tests
+    runs-on: ubuntu-latest
+
+    services:
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: strata_admin
+          MINIO_ROOT_PASSWORD: strata_password_123
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "mc ready local"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        entrypoint: sh
+        args: -c 'minio server /data --console-address ":9001"'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          check-latest: true
+
+      - name: Verify dependencies
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod
+
+      - name: Run E2E and Unit Tests
+        run: |
+          go test -v -race ./...
+
+      - name: Run Throughput Benchmark
+        run: |
+          go test -v -bench=BenchmarkPartitionThroughput -benchmem ./tests/...
+
+      - name: Build Broker Binary
+        run: |
+          go build -v -o bin/strata-broker ./cmd/strata-broker
